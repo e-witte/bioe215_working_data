@@ -64,3 +64,65 @@ surveys6 <- surveys %>%
 surveys %>% 
   group_by(sex) %>% 
   summarize (mean_weight = mean(weight, na.rm = TRUE))
+
+surveys %>% 
+  drop_na(weight, sex) %>% 
+  group_by(species_id, sex) %>% 
+  summarize(mean_weight = mean(weight),
+            min_weight = min(weight),
+            .groups = "drop") %>% 
+  arrange(desc(mean_weight))
+
+#Q7:
+surveys %>% 
+  group_by(plot_type) %>% 
+  summarize(animal_count = n_distinct(record_id),
+            .groups = "drop") %>% 
+  arrange(desc(animal_count))
+
+#Q8:
+surveys %>% 
+  drop_na(hindfoot_length) %>% 
+  group_by(species_id) %>% 
+  summarize(mean_hfl= mean(hindfoot_length), min_hfl = min(hindfoot_length), max_hfl = max(hindfoot_length), n())
+            .groups = "drop") %>% 
+  arrange(species_id)
+  
+
+#Q9:
+surveys %>% 
+  drop_na(weight, year) %>% 
+  group_by(year) %>% 
+  summarize(heaviest = max(weight),
+            .groups = "drop") %>% 
+  arrange(year) # I am struggling to return more values...
+
+#joining data
+count(surveys, taxa)
+taxa_iucn <- data.frame(
+  taxa = c("Bird", "Rabbit", "Rodent"),
+  iucn = c("NT", "LC", "LC")
+)
+taxa_iucn
+
+surveys_iucn <- left_join(surveys, taxa_iucn, by = "taxa")
+head(surveys_iucn)
+view(surveys_iucn)
+
+#Q10:
+surveys_iucn %>% 
+  drop_na(iucn) %>% 
+  group_by(iucn) %>% 
+  summarize(count = n_distinct(record_id),
+            .groups = "drop")
+
+#Q11:
+surveys_iucn %>% 
+  filter(is.na(iucn)) %>% 
+  select(taxa) #Reptiles!
+
+surveys_iucn2 <- inner_join(surveys, taxa_iucn, by = "taxa")
+
+#Q12:
+nrow(surveys_iucn) - nrow(surveys_iucn2)
+# 14 rows present in surveys_iucn2, not present in surveys_iucn. Reptiles do not have an IUCN status associated, therefore cannot be keyed to carry out using innerjoin. 
